@@ -28,8 +28,6 @@ const Dashboard = () => {
         page,
       });
 
-      console.log("Fetched Todos:", res.data);
-
       if (res.data?.todos) {
         setTodos(res.data.todos);
         setTotalPages(res.data.totalPages);
@@ -37,7 +35,6 @@ const Dashboard = () => {
         console.error("Invalid todos format:", res.data);
         setTodos([]);
       }
-      console.log("User from AuthContext:", user);
     } catch (error) {
       console.error("Error fetching todos:", error);
       setTodos([]);
@@ -49,10 +46,12 @@ const Dashboard = () => {
 
     try {
       const token = localStorage.getItem("token");
-      console.log("Sending Task:", task);
-
       const response = await createTodo(token, task);
-      console.log("Create Todo Response:", response);
+
+      if (response.data) {
+        setTodos((prev) => [...prev, response.data]); // Instant UI update
+      }
+
       setTask("");
       fetchTodos();
     } catch (error) {
@@ -65,18 +64,32 @@ const Dashboard = () => {
     try {
       const token = localStorage.getItem("token");
 
+      // Optimistic UI update
       setTodos((prevTodos) =>
         prevTodos.map((todo) =>
           todo._id === id ? { ...todo, completed } : todo
         )
       );
 
-      await updateTodo(token, id, { completed });
+      // API request to update the backend
+      const response = await updateTodo(token, id, {
+        task: updatedTask,
+        completed,
+      });
 
-      fetchTodos();
+      if (response.data) {
+        setTodos((prevTodos) =>
+          prevTodos.map((todo) =>
+            todo._id === id ? { ...todo, ...response.data } : todo
+          )
+        );
+      } else {
+        throw new Error("Invalid API response");
+      }
     } catch (error) {
       console.error("Error updating todo:", error);
 
+      // Revert UI change if API call fails
       setTodos((prevTodos) =>
         prevTodos.map((todo) =>
           todo._id === id ? { ...todo, completed: !completed } : todo
@@ -88,7 +101,7 @@ const Dashboard = () => {
   const handleDelete = async (id) => {
     try {
       await deleteTodo(localStorage.getItem("token"), id);
-      fetchTodos();
+      setTodos((prevTodos) => prevTodos.filter((todo) => todo._id !== id));
     } catch (error) {
       console.error("Error deleting todo:", error);
     }
@@ -138,7 +151,7 @@ const Dashboard = () => {
         </div>
 
         <ul className="mt-6 space-y-4">
-          {Array.isArray(todos) && todos.length > 0 ? (
+          {todos.length > 0 ? (
             todos.map((todo) => (
               <li
                 key={todo._id}
