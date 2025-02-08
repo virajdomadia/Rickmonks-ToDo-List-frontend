@@ -60,42 +60,48 @@ const Dashboard = () => {
   };
 
   const handleUpdate = async (id, updatedTask, completed) => {
+    if (!updatedTask.trim()) return alert("Task cannot be empty!");
+
     try {
       const token = localStorage.getItem("token");
 
-      // Optimistic UI update
+      // Optimistic update
       setTodos((prevTodos) =>
         prevTodos.map((todo) =>
           todo._id === id ? { ...todo, task: updatedTask, completed } : todo
         )
       );
 
-      // API request to update the backend
+      // Send update request
       const response = await updateTodo(token, id, {
         task: updatedTask,
         completed,
       });
 
       if (response.data) {
+        // Ensure we update based on actual API response
         setTodos((prevTodos) =>
           prevTodos.map((todo) =>
-            todo._id === id ? { ...todo, ...response.data } : todo
+            todo._id === id
+              ? {
+                  ...todo,
+                  task: response.data.task,
+                  completed: response.data.completed,
+                }
+              : todo
           )
         );
       } else {
-        throw new Error("Invalid API response");
+        throw new Error("Invalid response from server");
       }
 
-      setEditing(null); // Exit editing mode
+      setEditing(null);
     } catch (error) {
       console.error("Error updating todo:", error);
+      alert("Failed to update task!");
 
-      // Revert UI change if API call fails
-      setTodos((prevTodos) =>
-        prevTodos.map((todo) =>
-          todo._id === id ? { ...todo, completed: !completed } : todo
-        )
-      );
+      // Revert UI change on failure
+      fetchTodos();
     }
   };
 
