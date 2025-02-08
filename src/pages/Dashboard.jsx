@@ -65,23 +65,23 @@ const Dashboard = () => {
     try {
       const token = localStorage.getItem("token");
 
-      const updateData = updatedTask
-        ? { task: updatedTask, completed }
-        : { completed };
-
-      console.log("Updating Task:", id, updateData);
-
-      await updateTodo(token, id, updateData);
-
       setTodos((prevTodos) =>
         prevTodos.map((todo) =>
           todo._id === id ? { ...todo, completed } : todo
         )
       );
 
+      await updateTodo(token, id, { completed });
+
       fetchTodos();
     } catch (error) {
       console.error("Error updating todo:", error);
+
+      setTodos((prevTodos) =>
+        prevTodos.map((todo) =>
+          todo._id === id ? { ...todo, completed: !completed } : todo
+        )
+      );
     }
   };
 
