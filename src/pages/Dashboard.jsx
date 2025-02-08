@@ -32,7 +32,6 @@ const Dashboard = () => {
         setTodos(res.data.todos);
         setTotalPages(res.data.totalPages);
       } else {
-        console.error("Invalid todos format:", res.data);
         setTodos([]);
       }
     } catch (error) {
@@ -49,7 +48,7 @@ const Dashboard = () => {
       const response = await createTodo(token, task);
 
       if (response.data) {
-        setTodos((prev) => [...prev, response.data]); // Instant UI update
+        setTodos((prev) => [...prev, response.data]); // Optimistic UI update
       }
 
       setTask("");
@@ -67,7 +66,7 @@ const Dashboard = () => {
       // Optimistic UI update
       setTodos((prevTodos) =>
         prevTodos.map((todo) =>
-          todo._id === id ? { ...todo, completed } : todo
+          todo._id === id ? { ...todo, task: updatedTask, completed } : todo
         )
       );
 
@@ -86,6 +85,8 @@ const Dashboard = () => {
       } else {
         throw new Error("Invalid API response");
       }
+
+      setEditing(null); // Exit editing mode
     } catch (error) {
       console.error("Error updating todo:", error);
 
