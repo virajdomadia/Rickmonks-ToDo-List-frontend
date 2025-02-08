@@ -12,6 +12,7 @@ const Dashboard = () => {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [editText, setEditText] = useState("");
 
   useEffect(() => {
     if (user) fetchTodos();
@@ -72,7 +73,6 @@ const Dashboard = () => {
       });
 
       if (response.data) {
-        // Update todos with actual API response
         setTodos((prevTodos) =>
           prevTodos.map((todo) =>
             todo._id === id
@@ -84,14 +84,15 @@ const Dashboard = () => {
               : todo
           )
         );
-        setEditing(null); // Exit editing mode
+        setEditing(null);
+        setEditText(""); // Reset text state after editing
       } else {
         throw new Error("Invalid response from server");
       }
     } catch (error) {
       console.error("Error updating todo:", error);
       alert("Failed to update task!");
-      fetchTodos(); // Re-fetch from backend in case of failure
+      fetchTodos();
     }
   };
 
