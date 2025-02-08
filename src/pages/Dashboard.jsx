@@ -159,9 +159,10 @@ const Dashboard = () => {
                   <input
                     type="text"
                     className="border p-2 rounded-lg w-full"
-                    defaultValue={todo.task}
-                    onBlur={(e) =>
-                      handleUpdate(todo._id, e.target.value, todo.completed)
+                    value={editText}
+                    onChange={(e) => setEditText(e.target.value)}
+                    onBlur={() =>
+                      handleUpdate(todo._id, editText, todo.completed)
                     }
                     autoFocus
                   />
@@ -189,7 +190,7 @@ const Dashboard = () => {
                       handleUpdate(todo._id, todo.task, !todo.completed)
                     }
                   >
-                    ✅
+                    {todo.completed ? "❌" : "✅"}
                   </button>
                   <button
                     className="text-red-500 hover:text-red-600"
