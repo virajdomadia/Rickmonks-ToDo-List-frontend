@@ -65,13 +65,6 @@ const Dashboard = () => {
     try {
       const token = localStorage.getItem("token");
 
-      // Optimistic update
-      setTodos((prevTodos) =>
-        prevTodos.map((todo) =>
-          todo._id === id ? { ...todo, task: updatedTask, completed } : todo
-        )
-      );
-
       // Send update request
       const response = await updateTodo(token, id, {
         task: updatedTask,
@@ -79,7 +72,7 @@ const Dashboard = () => {
       });
 
       if (response.data) {
-        // Ensure we update based on actual API response
+        // Update todos with actual API response
         setTodos((prevTodos) =>
           prevTodos.map((todo) =>
             todo._id === id
@@ -91,17 +84,14 @@ const Dashboard = () => {
               : todo
           )
         );
+        setEditing(null); // Exit editing mode
       } else {
         throw new Error("Invalid response from server");
       }
-
-      setEditing(null);
     } catch (error) {
       console.error("Error updating todo:", error);
       alert("Failed to update task!");
-
-      // Revert UI change on failure
-      fetchTodos();
+      fetchTodos(); // Re-fetch from backend in case of failure
     }
   };
 
